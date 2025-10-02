@@ -55,6 +55,44 @@ def main():
             print("API is healthy")
         else:
             print("API is not healthy")
+        
+        # Example: Report an error for a feature
+        try:
+            health, is_pending = client.report_error(
+                feature_key="new_ui",
+                error_type="timeout",
+                error_message="Service did not respond in 5s",
+                context={
+                    "service": "payment-gateway",
+                    "timeout_ms": 5000,
+                    "retry_count": 3
+                }
+            )
+            print(f"Feature health after error report: enabled={health.enabled}, "
+                  f"auto_disabled={health.auto_disabled}, pending_change={is_pending}")
+            if health.error_rate is not None:
+                print(f"Error rate: {health.error_rate * 100:.2f}%")
+        except togglr.TogglrError as e:
+            print(f"Error reporting feature error: {e}")
+        
+        # Example: Get feature health status
+        try:
+            feature_health = client.get_feature_health("new_ui")
+            print(f"Feature health: enabled={feature_health.enabled}, "
+                  f"auto_disabled={feature_health.auto_disabled}")
+            if feature_health.error_rate is not None:
+                print(f"Error rate: {feature_health.error_rate * 100:.2f}%")
+            if feature_health.last_error_at is not None:
+                print(f"Last error at: {feature_health.last_error_at}")
+        except togglr.TogglrError as e:
+            print(f"Error getting feature health: {e}")
+        
+        # Example: Check if feature is healthy
+        try:
+            is_healthy = client.is_feature_healthy("new_ui")
+            print(f"Feature is healthy: {is_healthy}")
+        except togglr.TogglrError as e:
+            print(f"Error checking feature health: {e}")
 
 
 if __name__ == "__main__":

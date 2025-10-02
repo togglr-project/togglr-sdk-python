@@ -133,6 +133,50 @@ else:
     print("API is not healthy")
 ```
 
+### Error Reporting and Auto-Disable
+
+The SDK supports reporting feature execution errors for auto-disable functionality:
+
+```python
+# Report an error for a feature
+health, is_pending = client.report_error(
+    feature_key="feature_key",
+    error_type="timeout",
+    error_message="Service did not respond in 5s",
+    context={
+        "service": "payment-gateway",
+        "timeout_ms": 5000,
+        "retry_count": 3
+    }
+)
+
+print(f"Feature enabled: {health.enabled}, auto_disabled: {health.auto_disabled}, "
+      f"pending_change: {is_pending}")
+
+if is_pending:
+    print("Change is pending approval")
+```
+
+### Feature Health Monitoring
+
+Check the health status of features:
+
+```python
+# Get feature health status
+health = client.get_feature_health("feature_key")
+print(f"Feature Health:")
+print(f"  Enabled: {health.enabled}")
+print(f"  Auto Disabled: {health.auto_disabled}")
+if health.error_rate is not None:
+    print(f"  Error Rate: {health.error_rate * 100:.2f}%")
+if health.last_error_at is not None:
+    print(f"  Last Error: {health.last_error_at}")
+
+# Simple health check
+is_healthy = client.is_feature_healthy("feature_key")
+print(f"Feature is healthy: {is_healthy}")
+```
+
 ## Caching
 
 The SDK supports optional caching of evaluation results:
@@ -212,6 +256,49 @@ except togglr.FeatureNotFoundError:
 except togglr.TogglrError as e:
     # Other errors
     print(f"Error: {e}")
+```
+
+### Error Report Types
+
+```python
+# Create different types of error reports
+timeout_error = client.report_error(
+    feature_key="feature_key",
+    error_type="timeout",
+    error_message="Service timeout",
+    context={"service": "payment-gateway", "timeout_ms": 5000}
+)
+
+validation_error = client.report_error(
+    feature_key="feature_key",
+    error_type="validation",
+    error_message="Invalid data",
+    context={"field": "email", "error_code": "INVALID_FORMAT"}
+)
+
+service_error = client.report_error(
+    feature_key="feature_key",
+    error_type="service_unavailable",
+    error_message="Service down",
+    context={"service": "database", "status_code": 503}
+)
+```
+
+### Feature Health Types
+
+```python
+# FeatureHealth provides detailed health information
+from togglr import FeatureHealth
+
+# Access health properties
+health = client.get_feature_health("feature_key")
+print(f"Feature Key: {health.feature_key}")
+print(f"Environment Key: {health.environment_key}")
+print(f"Enabled: {health.enabled}")
+print(f"Auto Disabled: {health.auto_disabled}")
+print(f"Error Rate: {health.error_rate}")  # Optional
+print(f"Threshold: {health.threshold}")    # Optional
+print(f"Last Error At: {health.last_error_at}")  # Optional
 ```
 
 ## Client Generation

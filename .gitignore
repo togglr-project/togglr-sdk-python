@@ -129,7 +129,7 @@ dmypy.json
 .pyre/
 
 # Generated files
-internal/generated/
+#internal/generated/
 
 # IDE
 .vscode/

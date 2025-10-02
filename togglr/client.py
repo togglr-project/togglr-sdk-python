@@ -7,21 +7,15 @@ import time
 from typing import Any, Dict, Optional, Tuple, Union
 
 import httpx
-try:
-    from internal.generated.togglr_client import ApiClient, Configuration
-    from internal.generated.togglr_client.api.default_api import DefaultApi
-    from internal.generated.togglr_client.models.evaluate_response import EvaluateResponse
-    from internal.generated.togglr_client.exceptions import ApiException
-except ImportError:
-    # Fallback for when generated client is not available
-    ApiClient = None
-    Configuration = None
-    DefaultApi = None
-    EvaluateResponse = None
-    ApiException = Exception
+from internal.generated.togglr_client import ApiClient, Configuration
+from internal.generated.togglr_client.api.default_api import DefaultApi
+from internal.generated.togglr_client.models.evaluate_response import EvaluateResponse
+from internal.generated.togglr_client.models.feature_error_report import FeatureErrorReport
+from internal.generated.togglr_client.models.feature_health import FeatureHealth
+from internal.generated.togglr_client.exceptions import ApiException
 
-from .cache import LRUCache, CacheConfig
-from .config import ClientConfig
+from .cache import LRUCache
+from .config import ClientConfig, CacheConfig
 from .context import RequestContext
 from .errors import (
     TogglrError,
@@ -152,6 +146,58 @@ class Client:
                 self.config.logger(f"Evaluation failed, using default: {e}")
             return default
     
+    def report_error(
+        self, 
+        feature_key: str, 
+        error_type: str, 
+        error_message: str, 
+        context: Optional[Dict[str, Any]] = None
+    ) -> Tuple[FeatureHealth, bool]:
+        """Report a feature execution error for auto-disable functionality.
+        
+        Args:
+            feature_key: The feature key to report error for
+            error_type: Type of error (e.g., 'timeout', 'validation', 'service_unavailable')
+            error_message: Human-readable error message
+            context: Optional context data for the error
+            
+        Returns:
+            Tuple of (FeatureHealth, is_pending) where is_pending indicates if change is pending approval
+            
+        Raises:
+            TogglrError: If error reporting fails
+        """
+        return self._report_error_with_retries(feature_key, error_type, error_message, context)
+    
+    def get_feature_health(self, feature_key: str) -> FeatureHealth:
+        """Get the health status of a feature.
+        
+        Args:
+            feature_key: The feature key to get health for
+            
+        Returns:
+            FeatureHealth object with health information
+            
+        Raises:
+            TogglrError: If health retrieval fails
+        """
+        return self._get_feature_health_with_retries(feature_key)
+    
+    def is_feature_healthy(self, feature_key: str) -> bool:
+        """Check if a feature is healthy (enabled and not auto-disabled).
+        
+        Args:
+            feature_key: The feature key to check
+            
+        Returns:
+            True if feature is healthy, False otherwise
+            
+        Raises:
+            TogglrError: If health check fails
+        """
+        health = self.get_feature_health(feature_key)
+        return health.enabled and not health.auto_disabled
+    
     def _evaluate_with_retries(
         self, 
         feature_key: str, 
@@ -249,6 +295,109 @@ class Client:
             return InternalServerError("Internal server error")
         else:
             return TogglrError(f"API error: {exc.status}")
+    
+    def _report_error_with_retries(
+        self, 
+        feature_key: str, 
+        error_type: str, 
+        error_message: str, 
+        context: Optional[Dict[str, Any]] = None
+    ) -> Tuple[FeatureHealth, bool]:
+        """Report error with retry logic."""
+        last_error = None
+        
+        for attempt in range(self.config.retries + 1):
+            if attempt > 0:
+                # Calculate backoff delay
+                delay = self.config.backoff.calculate_delay(attempt)
+                time.sleep(delay)
+            
+            try:
+                return self._report_error_single(feature_key, error_type, error_message, context)
+                
+            except Exception as e:
+                last_error = e
+                if not self._should_retry(e):
+                    break
+        
+        # Convert API exceptions to our error types
+        if isinstance(last_error, ApiException):
+            raise self._convert_api_exception(last_error)
+        
+        raise TogglrError(f"Error reporting failed: {last_error}")
+    
+    def _report_error_single(
+        self, 
+        feature_key: str, 
+        error_type: str, 
+        error_message: str, 
+        context: Optional[Dict[str, Any]] = None
+    ) -> Tuple[FeatureHealth, bool]:
+        """Perform a single error report request."""
+        try:
+            # Create error report
+            error_report = FeatureErrorReport(
+                error_type=error_type,
+                error_message=error_message,
+                context=context
+            )
+            
+            # Make API call
+            response = self._api_client.report_feature_error(
+                feature_key=feature_key,
+                feature_error_report=error_report
+            )
+            
+            if isinstance(response, FeatureHealth):
+                return response, False
+            else:
+                # Handle error responses
+                raise TogglrError(f"Unexpected response type: {type(response)}")
+                
+        except ApiException as e:
+            if e.status == 404:
+                raise NotFoundError("Feature not found")
+            raise e
+    
+    def _get_feature_health_with_retries(self, feature_key: str) -> FeatureHealth:
+        """Get feature health with retry logic."""
+        last_error = None
+        
+        for attempt in range(self.config.retries + 1):
+            if attempt > 0:
+                # Calculate backoff delay
+                delay = self.config.backoff.calculate_delay(attempt)
+                time.sleep(delay)
+            
+            try:
+                return self._get_feature_health_single(feature_key)
+                
+            except Exception as e:
+                last_error = e
+                if not self._should_retry(e):
+                    break
+        
+        # Convert API exceptions to our error types
+        if isinstance(last_error, ApiException):
+            raise self._convert_api_exception(last_error)
+        
+        raise TogglrError(f"Health retrieval failed: {last_error}")
+    
+    def _get_feature_health_single(self, feature_key: str) -> FeatureHealth:
+        """Perform a single health check request."""
+        try:
+            response = self._api_client.get_feature_health(feature_key=feature_key)
+            
+            if isinstance(response, FeatureHealth):
+                return response
+            else:
+                # Handle error responses
+                raise TogglrError(f"Unexpected response type: {type(response)}")
+                
+        except ApiException as e:
+            if e.status == 404:
+                raise NotFoundError("Feature not found")
+            raise e
 
 
 def new_client(api_key: str, **kwargs) -> Client:

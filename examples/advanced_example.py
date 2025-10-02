@@ -153,6 +153,54 @@ def main():
         print("\n--- Final Metrics ---")
         metrics.print_stats()
         
+        # Example: Error reporting and health monitoring
+        print("\n--- Error Reporting and Health Monitoring ---")
+        feature_key = "new_ui"
+        
+        # Report different types of errors
+        error_types = [
+            ("timeout", "Payment gateway timeout", {"gateway": "stripe", "timeout_ms": 5000}),
+            ("validation", "Invalid payment data", {"field": "card_number", "error_code": "INVALID_FORMAT"}),
+            ("service_unavailable", "Payment service is down", {"service": "payment-processor", "status_code": 503})
+        ]
+        
+        for error_type, error_message, error_context in error_types:
+            try:
+                health, is_pending = client.report_error(
+                    feature_key=feature_key,
+                    error_type=error_type,
+                    error_message=error_message,
+                    context=error_context
+                )
+                print(f"  {error_type}: enabled={health.enabled}, auto_disabled={health.auto_disabled}, "
+                      f"pending={is_pending}")
+            except togglr.TogglrError as e:
+                print(f"  {error_type}: error - {e}")
+        
+        # Get feature health
+        try:
+            health = client.get_feature_health(feature_key)
+            print(f"\nFeature Health Status:")
+            print(f"  Feature Key: {health.feature_key}")
+            print(f"  Environment: {health.environment_key}")
+            print(f"  Enabled: {health.enabled}")
+            print(f"  Auto Disabled: {health.auto_disabled}")
+            if health.error_rate is not None:
+                print(f"  Error Rate: {health.error_rate * 100:.2f}%")
+            if health.threshold is not None:
+                print(f"  Threshold: {health.threshold * 100:.2f}%")
+            if health.last_error_at is not None:
+                print(f"  Last Error: {health.last_error_at}")
+        except togglr.TogglrError as e:
+            print(f"Error getting feature health: {e}")
+        
+        # Check if feature is healthy
+        try:
+            is_healthy = client.is_feature_healthy(feature_key)
+            print(f"\nFeature is healthy: {is_healthy}")
+        except togglr.TogglrError as e:
+            print(f"Error checking feature health: {e}")
+        
     finally:
         client.close()
 

@@ -13,6 +13,10 @@ from .errors import (
 )
 from .version import __version__
 
+# Import generated models
+from internal.generated.togglr_client.models.feature_error_report import FeatureErrorReport
+from internal.generated.togglr_client.models.feature_health import FeatureHealth
+
 __all__ = [
     "Client",
     "ClientConfig", 
@@ -24,6 +28,8 @@ __all__ = [
     "InternalServerError",
     "TooManyRequestsError",
     "FeatureNotFoundError",
+    "FeatureErrorReport",
+    "FeatureHealth",
     "__version__",
 ]
 
