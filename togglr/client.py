@@ -1,12 +1,10 @@
 """Main client implementation for togglr-sdk-python."""
 
-import asyncio
 import hashlib
 import json
 import time
 from typing import Any, Dict, Optional, Tuple, Union
 
-import httpx
 from togglr_client import ApiClient, Configuration
 from togglr_client.api.default_api import DefaultApi
 from togglr_client.models.evaluate_response import EvaluateResponse
@@ -39,13 +37,6 @@ class Client:
         """
         self.config = config
         
-        # Create HTTP client
-        self._http_client = httpx.Client(
-            base_url=config.base_url,
-            timeout=config.timeout,
-            limits=httpx.Limits(max_connections=config.max_connections)
-        )
-        
         # Create API client
         api_config = Configuration(
             host=config.base_url,
@@ -61,7 +52,6 @@ class Client:
     
     def close(self) -> None:
         """Close the client and clean up resources."""
-        self._http_client.close()
         if self._cache:
             self._cache.clear()
     

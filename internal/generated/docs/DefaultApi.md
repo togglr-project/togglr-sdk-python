@@ -93,7 +93,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **report_feature_error**
-> FeatureHealth report_feature_error(feature_key, feature_error_report)
+> report_feature_error(feature_key, feature_error_report)
 
 Report feature execution error (for auto-disable)
 
@@ -104,7 +104,6 @@ Report feature execution error (for auto-disable)
 ```python
 import togglr_client
 from togglr_client.models.feature_error_report import FeatureErrorReport
-from togglr_client.models.feature_health import FeatureHealth
 from togglr_client.rest import ApiException
 from pprint import pprint
 
@@ -134,9 +133,7 @@ with togglr_client.ApiClient(configuration) as api_client:
 
     try:
         # Report feature execution error (for auto-disable)
-        api_response = api_instance.report_feature_error(feature_key, feature_error_report)
-        print("The response of DefaultApi->report_feature_error:\n")
-        pprint(api_response)
+        api_instance.report_feature_error(feature_key, feature_error_report)
     except Exception as e:
         print("Exception when calling DefaultApi->report_feature_error: %s\n" % e)
 ```
@@ -153,7 +150,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**FeatureHealth**](FeatureHealth.md)
+void (empty response body)
 
 ### Authorization
 
@@ -168,8 +165,7 @@ Name | Type | Description  | Notes
 
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-**200** | Error reported successfully |  -  |
-**202** | Error reported, evaluation pending |  -  |
+**202** | Error reported |  -  |
 **400** | Bad request |  -  |
 **401** | Unauthorized |  -  |
 **404** | Feature not found |  -  |

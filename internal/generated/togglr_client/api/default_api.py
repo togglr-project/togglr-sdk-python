@@ -328,7 +328,7 @@ class DefaultApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> FeatureHealth:
+    ) -> None:
         """Report feature execution error (for auto-disable)
 
 
@@ -368,7 +368,6 @@ class DefaultApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "FeatureHealth",
             '202': None,
             '400': "ErrorBadRequest",
             '401': "ErrorUnauthorized",
@@ -403,7 +402,7 @@ class DefaultApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> ApiResponse[FeatureHealth]:
+    ) -> ApiResponse[None]:
         """Report feature execution error (for auto-disable)
 
 
@@ -443,7 +442,6 @@ class DefaultApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "FeatureHealth",
             '202': None,
             '400': "ErrorBadRequest",
             '401': "ErrorUnauthorized",
@@ -518,7 +516,6 @@ class DefaultApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "FeatureHealth",
             '202': None,
             '400': "ErrorBadRequest",
             '401': "ErrorUnauthorized",
