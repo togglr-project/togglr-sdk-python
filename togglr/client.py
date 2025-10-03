@@ -7,12 +7,12 @@ import time
 from typing import Any, Dict, Optional, Tuple, Union
 
 import httpx
-from internal.generated.togglr_client import ApiClient, Configuration
-from internal.generated.togglr_client.api.default_api import DefaultApi
-from internal.generated.togglr_client.models.evaluate_response import EvaluateResponse
-from internal.generated.togglr_client.models.feature_error_report import FeatureErrorReport
-from internal.generated.togglr_client.models.feature_health import FeatureHealth
-from internal.generated.togglr_client.exceptions import ApiException
+from togglr_client import ApiClient, Configuration
+from togglr_client.api.default_api import DefaultApi
+from togglr_client.models.evaluate_response import EvaluateResponse
+from togglr_client.models.feature_error_report import FeatureErrorReport
+from togglr_client.models.feature_health import FeatureHealth
+from togglr_client.exceptions import ApiException
 
 from .cache import LRUCache
 from .config import ClientConfig, CacheConfig
@@ -152,7 +152,7 @@ class Client:
         error_type: str, 
         error_message: str, 
         context: Optional[Dict[str, Any]] = None
-    ) -> Tuple[FeatureHealth, bool]:
+    ) -> None:
         """Report a feature execution error for auto-disable functionality.
         
         Args:
@@ -161,13 +161,10 @@ class Client:
             error_message: Human-readable error message
             context: Optional context data for the error
             
-        Returns:
-            Tuple of (FeatureHealth, is_pending) where is_pending indicates if change is pending approval
-            
         Raises:
             TogglrError: If error reporting fails
         """
-        return self._report_error_with_retries(feature_key, error_type, error_message, context)
+        self._report_error_with_retries(feature_key, error_type, error_message, context)
     
     def get_feature_health(self, feature_key: str) -> FeatureHealth:
         """Get the health status of a feature.
@@ -302,7 +299,7 @@ class Client:
         error_type: str, 
         error_message: str, 
         context: Optional[Dict[str, Any]] = None
-    ) -> Tuple[FeatureHealth, bool]:
+    ) -> None:
         """Report error with retry logic."""
         last_error = None
         
@@ -313,7 +310,8 @@ class Client:
                 time.sleep(delay)
             
             try:
-                return self._report_error_single(feature_key, error_type, error_message, context)
+                self._report_error_single(feature_key, error_type, error_message, context)
+                return  # Success, exit retry loop
                 
             except Exception as e:
                 last_error = e
@@ -332,7 +330,7 @@ class Client:
         error_type: str, 
         error_message: str, 
         context: Optional[Dict[str, Any]] = None
-    ) -> Tuple[FeatureHealth, bool]:
+    ) -> None:
         """Perform a single error report request."""
         try:
             # Create error report
@@ -348,11 +346,9 @@ class Client:
                 feature_error_report=error_report
             )
             
-            if isinstance(response, FeatureHealth):
-                return response, False
-            else:
-                # Handle error responses
-                raise TogglrError(f"Unexpected response type: {type(response)}")
+            # 202 response means success - error queued for processing
+            # No need to return anything, just success
+            return
                 
         except ApiException as e:
             if e.status == 404:

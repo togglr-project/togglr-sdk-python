@@ -58,7 +58,7 @@ def main():
         
         # Example: Report an error for a feature
         try:
-            health, is_pending = client.report_error(
+            client.report_error(
                 feature_key="new_ui",
                 error_type="timeout",
                 error_message="Service did not respond in 5s",
@@ -68,10 +68,7 @@ def main():
                     "retry_count": 3
                 }
             )
-            print(f"Feature health after error report: enabled={health.enabled}, "
-                  f"auto_disabled={health.auto_disabled}, pending_change={is_pending}")
-            if health.error_rate is not None:
-                print(f"Error rate: {health.error_rate * 100:.2f}%")
+            print("Error reported successfully - queued for processing")
         except togglr.TogglrError as e:
             print(f"Error reporting feature error: {e}")
         

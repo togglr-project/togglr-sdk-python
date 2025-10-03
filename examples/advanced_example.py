@@ -166,14 +166,13 @@ def main():
         
         for error_type, error_message, error_context in error_types:
             try:
-                health, is_pending = client.report_error(
+                client.report_error(
                     feature_key=feature_key,
                     error_type=error_type,
                     error_message=error_message,
                     context=error_context
                 )
-                print(f"  {error_type}: enabled={health.enabled}, auto_disabled={health.auto_disabled}, "
-                      f"pending={is_pending}")
+                print(f"  {error_type}: reported successfully - queued for processing")
             except togglr.TogglrError as e:
                 print(f"  {error_type}: error - {e}")
         

@@ -139,7 +139,7 @@ The SDK supports reporting feature execution errors for auto-disable functionali
 
 ```python
 # Report an error for a feature
-health, is_pending = client.report_error(
+client.report_error(
     feature_key="feature_key",
     error_type="timeout",
     error_message="Service did not respond in 5s",
@@ -150,11 +150,7 @@ health, is_pending = client.report_error(
     }
 )
 
-print(f"Feature enabled: {health.enabled}, auto_disabled: {health.auto_disabled}, "
-      f"pending_change: {is_pending}")
-
-if is_pending:
-    print("Change is pending approval")
+print("Error reported successfully - queued for processing")
 ```
 
 ### Feature Health Monitoring
@@ -262,21 +258,21 @@ except togglr.TogglrError as e:
 
 ```python
 # Create different types of error reports
-timeout_error = client.report_error(
+client.report_error(
     feature_key="feature_key",
     error_type="timeout",
     error_message="Service timeout",
     context={"service": "payment-gateway", "timeout_ms": 5000}
 )
 
-validation_error = client.report_error(
+client.report_error(
     feature_key="feature_key",
     error_type="validation",
     error_message="Invalid data",
     context={"field": "email", "error_code": "INVALID_FORMAT"}
 )
 
-service_error = client.report_error(
+client.report_error(
     feature_key="feature_key",
     error_type="service_unavailable",
     error_message="Service down",
