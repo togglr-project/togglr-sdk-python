@@ -40,7 +40,8 @@ class Client:
         # Create API client
         api_config = Configuration(
             host=config.base_url,
-            api_key={"ApiKeyAuth": config.api_key}
+            api_key={"ApiKeyAuth": config.api_key},
+            verify_ssl=not config.insecure
         )
         api_client = ApiClient(api_config)
         self._api_client = DefaultApi(api_client)

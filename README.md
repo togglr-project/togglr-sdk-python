@@ -72,7 +72,8 @@ client = togglr.new_client(
     base_url="https://api.togglr.com",
     timeout=2.0,
     retries=3,
-    cache={"enabled": True, "max_size": 1000, "ttl_seconds": 10}
+    cache={"enabled": True, "max_size": 1000, "ttl_seconds": 10},
+    insecure=True  # Skip SSL verification for self-signed certificates
 )
 ```
 

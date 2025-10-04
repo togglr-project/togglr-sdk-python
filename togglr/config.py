@@ -47,6 +47,7 @@ class ClientConfig:
     backoff: BackoffConfig = field(default_factory=BackoffConfig)
     cache: CacheConfig = field(default_factory=CacheConfig)
     max_connections: int = 100
+    insecure: bool = False
     
     # Optional callbacks
     logger: Optional[Callable[[str, Any], None]] = None
@@ -90,4 +91,9 @@ class ClientConfig:
     def with_metrics(self, metrics: Any) -> "ClientConfig":
         """Set custom metrics."""
         self.metrics = metrics
+        return self
+    
+    def with_insecure(self) -> "ClientConfig":
+        """Enable insecure mode (skip SSL verification)."""
+        self.insecure = True
         return self
