@@ -61,8 +61,9 @@ def main():
     metrics = CustomMetrics()
     
     # Create custom configuration
-    config = ClientConfig.default("your-api-key-here") \
-        .with_base_url("http://localhost:8090") \
+    config = ClientConfig.default("42b6f8f1-630c-400c-97bd-a3454a07f700") \
+        .with_base_url("https://localhost") \
+        .with_insecure() \
         .with_timeout(2.0) \
         .with_retries(3) \
         .with_cache(enabled=True, max_size=500, ttl_seconds=30) \
