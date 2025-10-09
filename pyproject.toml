@@ -2,29 +2,39 @@
 requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
-[tool.black]
-line-length = 88
-target-version = ['py38']
-include = '\.pyi?$'
-extend-exclude = '''
-/(
-  # directories
-  \.eggs
-  | \.git
-  | \.hg
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | build
-  | dist
-)/
-'''
+[project]
+name = "togglr-sdk"
+version = "1.0.0"
+dependencies = [
+  "httpx",
+  "pydantic",
+  "typing-extensions",
+  "cachetools",
+]
+requires-python = ">=3.8"
+authors = [
+  {name = "Roman Chudov", email = "roman.chudov@gmail.com"},
+]
+maintainers = [
+  {name = "Roman Chudov", email = "roman.chudov@gmail.com"},
+]
+description = "SDK for Togglr feature flags management system"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICEN[CS]E.*"]
+keywords = ["sdk", "togglr", "feature-flag"]
+classifiers = [
+  "Programming Language :: Python"
+]
 
-[tool.isort]
-profile = "black"
-multi_line_output = 3
-line_length = 88
-known_first_party = ["togglr"]
+[project.optional-dependencies]
+
+[project.urls]
+Homepage = "https://github.com/togglr-project/togglr-sdk-python"
+Documentation = "https://github.com/togglr-project/togglr-sdk-python"
+Repository = "https://github.com/togglr-project/togglr-sdk-python.git"
+
+[project.scripts]
 
 [tool.mypy]
 python_version = "3.8"
