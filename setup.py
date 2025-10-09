@@ -12,15 +12,14 @@ with open("requirements.txt", "r", encoding="utf-8") as fh:
 setup(
     name="togglr-sdk",
     version="1.0.0",
-    author="Togglr Team",
-    author_email="team@togglr.com",
+    author="Roman Chudov",
+    author_email="roman.chudov@gmail.com",
     description="Python SDK for Togglr feature flag management system",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/rom8726/togglr-sdk-python",
+    url="https://github.com/togglr-project/togglr-sdk-python",
     packages=find_packages(),
     classifiers=[
-        "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
