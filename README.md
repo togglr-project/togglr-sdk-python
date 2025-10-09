@@ -77,6 +77,52 @@ client = togglr.new_client(
 )
 ```
 
+### TLS/SSL Configuration
+
+The SDK supports comprehensive TLS/SSL configuration for secure connections:
+
+```python
+# Using with_ methods
+config = ClientConfig.default("api-key") \
+    .with_base_url("https://api.togglr.com") \
+    .with_ssl_ca_cert("/path/to/ca-certificate.pem") \
+    .with_client_cert("/path/to/client-cert.pem", "/path/to/client-key.pem") \
+    .with_tls_server_name("api.togglr.com") \
+    .with_ssl_hostname_verification(True)
+
+client = Client(config)
+
+# Using new_client with TLS parameters
+client = togglr.new_client(
+    api_key="api-key",
+    base_url="https://api.togglr.com",
+    ssl_ca_cert="/path/to/ca-certificate.pem",
+    cert_file="/path/to/client-cert.pem",
+    key_file="/path/to/client-key.pem",
+    ca_cert_data="-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----",
+    tls_server_name="api.togglr.com",
+    assert_hostname=True
+)
+
+# Using CA certificate data instead of file
+config = ClientConfig.default("api-key") \
+    .with_ca_cert_data("-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----")
+
+# Insecure mode (only for testing)
+config = ClientConfig.default("api-key") \
+    .with_insecure()  # Disables SSL certificate verification
+```
+
+#### Available TLS Options
+
+- `ssl_ca_cert`: Path to CA certificate file
+- `cert_file`: Path to client certificate file  
+- `key_file`: Path to client private key file
+- `ca_cert_data`: CA certificate data (PEM or DER format)
+- `assert_hostname`: Enable/disable SSL hostname verification
+- `tls_server_name`: TLS Server Name Indication (SNI)
+- `insecure`: Skip SSL verification (for testing only)
+
 ### Advanced configuration
 
 ```python
@@ -334,6 +380,7 @@ Complete usage examples are located in the `examples/` directory:
 
 - `simple_example.py` - Simple usage example
 - `advanced_example.py` - Advanced example with custom configuration
+- `tls_example.py` - TLS/SSL configuration examples
 
 ## Requirements
 

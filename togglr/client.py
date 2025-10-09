@@ -43,6 +43,21 @@ class Client:
             api_key={"ApiKeyAuth": config.api_key},
         )
         api_config.verify_ssl = not config.insecure
+        
+        # Configure TLS/SSL settings
+        if config.ssl_ca_cert:
+            api_config.ssl_ca_cert = config.ssl_ca_cert
+        if config.cert_file:
+            api_config.cert_file = config.cert_file
+        if config.key_file:
+            api_config.key_file = config.key_file
+        if config.ca_cert_data:
+            api_config.ca_cert_data = config.ca_cert_data
+        if config.assert_hostname is not None:
+            api_config.assert_hostname = config.assert_hostname
+        if config.tls_server_name:
+            api_config.tls_server_name = config.tls_server_name
+        
         api_client = ApiClient(api_config)
         self._api_client = DefaultApi(api_client)
         
@@ -412,5 +427,21 @@ def new_client(api_key: str, **kwargs) -> Client:
             config.cache = CacheConfig(**cache_config)
         else:
             config.cache = cache_config
+    if "insecure" in kwargs:
+        config.insecure = kwargs["insecure"]
+    
+    # Apply TLS/SSL arguments
+    if "ssl_ca_cert" in kwargs:
+        config.ssl_ca_cert = kwargs["ssl_ca_cert"]
+    if "cert_file" in kwargs:
+        config.cert_file = kwargs["cert_file"]
+    if "key_file" in kwargs:
+        config.key_file = kwargs["key_file"]
+    if "ca_cert_data" in kwargs:
+        config.ca_cert_data = kwargs["ca_cert_data"]
+    if "assert_hostname" in kwargs:
+        config.assert_hostname = kwargs["assert_hostname"]
+    if "tls_server_name" in kwargs:
+        config.tls_server_name = kwargs["tls_server_name"]
     
     return Client(config)

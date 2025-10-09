@@ -121,6 +121,64 @@ class TestClientConfig:
         config = ClientConfig.default("test-api-key").with_metrics(metrics)
         assert config.metrics is metrics
     
+    def test_with_insecure(self):
+        """Test setting insecure mode."""
+        config = ClientConfig.default("test-api-key").with_insecure()
+        assert config.insecure is True
+    
+    def test_with_ssl_ca_cert(self):
+        """Test setting SSL CA certificate file."""
+        config = ClientConfig.default("test-api-key").with_ssl_ca_cert("/path/to/ca.pem")
+        assert config.ssl_ca_cert == "/path/to/ca.pem"
+    
+    def test_with_client_cert(self):
+        """Test setting client certificate files."""
+        config = ClientConfig.default("test-api-key").with_client_cert("/path/to/cert.pem", "/path/to/key.pem")
+        assert config.cert_file == "/path/to/cert.pem"
+        assert config.key_file == "/path/to/key.pem"
+    
+    def test_with_client_cert_no_key(self):
+        """Test setting client certificate without key file."""
+        config = ClientConfig.default("test-api-key").with_client_cert("/path/to/cert.pem")
+        assert config.cert_file == "/path/to/cert.pem"
+        assert config.key_file is None
+    
+    def test_with_ca_cert_data_string(self):
+        """Test setting CA certificate data as string."""
+        cert_data = "-----BEGIN CERTIFICATE-----\nMII...\n-----END CERTIFICATE-----"
+        config = ClientConfig.default("test-api-key").with_ca_cert_data(cert_data)
+        assert config.ca_cert_data == cert_data
+    
+    def test_with_ca_cert_data_bytes(self):
+        """Test setting CA certificate data as bytes."""
+        cert_data = b"-----BEGIN CERTIFICATE-----\nMII...\n-----END CERTIFICATE-----"
+        config = ClientConfig.default("test-api-key").with_ca_cert_data(cert_data)
+        assert config.ca_cert_data == cert_data
+    
+    def test_with_ssl_hostname_verification(self):
+        """Test setting SSL hostname verification."""
+        config = ClientConfig.default("test-api-key").with_ssl_hostname_verification(False)
+        assert config.assert_hostname is False
+        
+        config = ClientConfig.default("test-api-key").with_ssl_hostname_verification(True)
+        assert config.assert_hostname is True
+    
+    def test_with_tls_server_name(self):
+        """Test setting TLS server name."""
+        config = ClientConfig.default("test-api-key").with_tls_server_name("api.example.com")
+        assert config.tls_server_name == "api.example.com"
+    
+    def test_tls_default_values(self):
+        """Test default TLS values."""
+        config = ClientConfig.default("test-api-key")
+        assert config.ssl_ca_cert is None
+        assert config.cert_file is None
+        assert config.key_file is None
+        assert config.ca_cert_data is None
+        assert config.assert_hostname is None
+        assert config.tls_server_name is None
+        assert config.insecure is False
+    
     def test_chaining(self):
         """Test method chaining."""
         def custom_logger(message: str, **kwargs):
@@ -138,7 +196,10 @@ class TestClientConfig:
             .with_cache(enabled=True, max_size=2000, ttl_seconds=120) \
             .with_backoff(base_delay=0.2, max_delay=5.0, factor=1.8) \
             .with_logger(custom_logger) \
-            .with_metrics(metrics)
+            .with_metrics(metrics) \
+            .with_ssl_ca_cert("/path/to/ca.pem") \
+            .with_client_cert("/path/to/cert.pem", "/path/to/key.pem") \
+            .with_tls_server_name("api.example.com")
         
         assert config.api_key == "test-api-key"
         assert config.base_url == "https://api.example.com"
@@ -152,3 +213,7 @@ class TestClientConfig:
         assert config.backoff.factor == 1.8
         assert config.logger is custom_logger
         assert config.metrics is metrics
+        assert config.ssl_ca_cert == "/path/to/ca.pem"
+        assert config.cert_file == "/path/to/cert.pem"
+        assert config.key_file == "/path/to/key.pem"
+        assert config.tls_server_name == "api.example.com"

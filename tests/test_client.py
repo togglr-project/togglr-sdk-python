@@ -180,3 +180,86 @@ class TestClient:
         is_enabled = client.is_enabled_or_default("test_feature", context, default=False)
         
         assert is_enabled is False
+    
+    @patch('togglr.client.Configuration')
+    @patch('togglr.client.ApiClient')
+    @patch('togglr.client.DefaultApi')
+    def test_client_with_tls_config(self, mock_api_class, mock_api_client_class, mock_config_class):
+        """Test client initialization with TLS configuration."""
+        mock_config = Mock()
+        mock_config_class.return_value = mock_config
+        mock_api_client = Mock()
+        mock_api_client_class.return_value = mock_api_client
+        mock_api_class.return_value = Mock()
+        
+        config = ClientConfig.default("test-api-key") \
+            .with_ssl_ca_cert("/path/to/ca.pem") \
+            .with_client_cert("/path/to/cert.pem", "/path/to/key.pem") \
+            .with_ca_cert_data("-----BEGIN CERTIFICATE-----\nMII...\n-----END CERTIFICATE-----") \
+            .with_ssl_hostname_verification(False) \
+            .with_tls_server_name("api.example.com")
+        
+        client = Client(config)
+        
+        # Verify Configuration was called with correct parameters
+        mock_config_class.assert_called_once_with(
+            host="http://localhost:8090",
+            api_key={"ApiKeyAuth": "test-api-key"}
+        )
+        
+        # Verify TLS settings were applied
+        assert mock_config.verify_ssl is True  # insecure=False by default
+        assert mock_config.ssl_ca_cert == "/path/to/ca.pem"
+        assert mock_config.cert_file == "/path/to/cert.pem"
+        assert mock_config.key_file == "/path/to/key.pem"
+        assert mock_config.ca_cert_data == "-----BEGIN CERTIFICATE-----\nMII...\n-----END CERTIFICATE-----"
+        assert mock_config.assert_hostname is False
+        assert mock_config.tls_server_name == "api.example.com"
+    
+    @patch('togglr.client.Configuration')
+    @patch('togglr.client.ApiClient')
+    @patch('togglr.client.DefaultApi')
+    def test_client_with_insecure_mode(self, mock_api_class, mock_api_client_class, mock_config_class):
+        """Test client initialization with insecure mode."""
+        mock_config = Mock()
+        mock_config_class.return_value = mock_config
+        mock_api_client = Mock()
+        mock_api_client_class.return_value = mock_api_client
+        mock_api_class.return_value = Mock()
+        
+        config = ClientConfig.default("test-api-key").with_insecure()
+        client = Client(config)
+        
+        # Verify insecure mode was applied
+        assert mock_config.verify_ssl is False
+    
+    @patch('togglr.client.Configuration')
+    @patch('togglr.client.ApiClient')
+    @patch('togglr.client.DefaultApi')
+    def test_new_client_with_tls_kwargs(self, mock_api_class, mock_api_client_class, mock_config_class):
+        """Test new_client function with TLS keyword arguments."""
+        mock_config = Mock()
+        mock_config_class.return_value = mock_config
+        mock_api_client = Mock()
+        mock_api_client_class.return_value = mock_api_client
+        mock_api_class.return_value = Mock()
+        
+        from togglr.client import new_client
+        
+        client = new_client(
+            "test-api-key",
+            ssl_ca_cert="/path/to/ca.pem",
+            cert_file="/path/to/cert.pem",
+            key_file="/path/to/key.pem",
+            ca_cert_data="-----BEGIN CERTIFICATE-----\nMII...\n-----END CERTIFICATE-----",
+            assert_hostname=False,
+            tls_server_name="api.example.com"
+        )
+        
+        # Verify TLS settings were applied
+        assert mock_config.ssl_ca_cert == "/path/to/ca.pem"
+        assert mock_config.cert_file == "/path/to/cert.pem"
+        assert mock_config.key_file == "/path/to/key.pem"
+        assert mock_config.ca_cert_data == "-----BEGIN CERTIFICATE-----\nMII...\n-----END CERTIFICATE-----"
+        assert mock_config.assert_hostname is False
+        assert mock_config.tls_server_name == "api.example.com"

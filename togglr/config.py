@@ -1,7 +1,7 @@
 """Configuration classes for togglr-sdk-python."""
 
 import time
-from typing import Optional, Callable, Any
+from typing import Optional, Callable, Any, Union
 from dataclasses import dataclass, field
 
 
@@ -48,6 +48,14 @@ class ClientConfig:
     cache: CacheConfig = field(default_factory=CacheConfig)
     max_connections: int = 100
     insecure: bool = False
+    
+    # TLS/SSL configuration
+    ssl_ca_cert: Optional[str] = None  # Path to CA certificate file
+    cert_file: Optional[str] = None    # Path to client certificate file
+    key_file: Optional[str] = None     # Path to client private key file
+    ca_cert_data: Optional[Union[str, bytes]] = None  # CA certificate data (PEM/DER)
+    assert_hostname: Optional[bool] = None  # SSL hostname verification
+    tls_server_name: Optional[str] = None   # TLS Server Name Indication (SNI)
     
     # Optional callbacks
     logger: Optional[Callable[[str, Any], None]] = None
@@ -96,4 +104,31 @@ class ClientConfig:
     def with_insecure(self) -> "ClientConfig":
         """Enable insecure mode (skip SSL verification)."""
         self.insecure = True
+        return self
+    
+    def with_ssl_ca_cert(self, ssl_ca_cert: str) -> "ClientConfig":
+        """Set the path to CA certificate file."""
+        self.ssl_ca_cert = ssl_ca_cert
+        return self
+    
+    def with_client_cert(self, cert_file: str, key_file: Optional[str] = None) -> "ClientConfig":
+        """Set client certificate and key files."""
+        self.cert_file = cert_file
+        if key_file is not None:
+            self.key_file = key_file
+        return self
+    
+    def with_ca_cert_data(self, ca_cert_data: Union[str, bytes]) -> "ClientConfig":
+        """Set CA certificate data (PEM or DER format)."""
+        self.ca_cert_data = ca_cert_data
+        return self
+    
+    def with_ssl_hostname_verification(self, assert_hostname: bool) -> "ClientConfig":
+        """Enable or disable SSL hostname verification."""
+        self.assert_hostname = assert_hostname
+        return self
+    
+    def with_tls_server_name(self, tls_server_name: str) -> "ClientConfig":
+        """Set TLS Server Name Indication (SNI)."""
+        self.tls_server_name = tls_server_name
         return self
