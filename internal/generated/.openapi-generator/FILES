@@ -16,6 +16,7 @@ docs/EvaluateResponse.md
 docs/FeatureErrorReport.md
 docs/FeatureHealth.md
 docs/HealthResponse.md
+docs/TrackRequest.md
 git_push.sh
 pyproject.toml
 requirements.txt
@@ -43,6 +44,7 @@ togglr_client/models/evaluate_response.py
 togglr_client/models/feature_error_report.py
 togglr_client/models/feature_health.py
 togglr_client/models/health_response.py
+togglr_client/models/track_request.py
 togglr_client/py.typed
 togglr_client/rest.py
 tox.ini

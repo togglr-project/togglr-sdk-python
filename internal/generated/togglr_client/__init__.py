@@ -40,9 +40,48 @@ __all__ = [
     "FeatureErrorReport",
     "FeatureHealth",
     "HealthResponse",
+    "TrackRequest",
 ]
 
-# import apis into sdk package
+if __import__("typing").TYPE_CHECKING:
+    # import apis into sdk package
+    from togglr_client.api.default_api import DefaultApi as DefaultApi
+    
+    # import ApiClient
+    from togglr_client.api_response import ApiResponse as ApiResponse
+    from togglr_client.api_client import ApiClient as ApiClient
+    from togglr_client.configuration import Configuration as Configuration
+    from togglr_client.exceptions import OpenApiException as OpenApiException
+    from togglr_client.exceptions import ApiTypeError as ApiTypeError
+    from togglr_client.exceptions import ApiValueError as ApiValueError
+    from togglr_client.exceptions import ApiKeyError as ApiKeyError
+    from togglr_client.exceptions import ApiAttributeError as ApiAttributeError
+    from togglr_client.exceptions import ApiException as ApiException
+    
+    # import models into sdk package
+    from togglr_client.models.error import Error as Error
+    from togglr_client.models.error_bad_request import ErrorBadRequest as ErrorBadRequest
+    from togglr_client.models.error_error import ErrorError as ErrorError
+    from togglr_client.models.error_internal_server_error import ErrorInternalServerError as ErrorInternalServerError
+    from togglr_client.models.error_not_found import ErrorNotFound as ErrorNotFound
+    from togglr_client.models.error_permission_denied import ErrorPermissionDenied as ErrorPermissionDenied
+    from togglr_client.models.error_too_many_requests import ErrorTooManyRequests as ErrorTooManyRequests
+    from togglr_client.models.error_unauthorized import ErrorUnauthorized as ErrorUnauthorized
+    from togglr_client.models.evaluate_response import EvaluateResponse as EvaluateResponse
+    from togglr_client.models.feature_error_report import FeatureErrorReport as FeatureErrorReport
+    from togglr_client.models.feature_health import FeatureHealth as FeatureHealth
+    from togglr_client.models.health_response import HealthResponse as HealthResponse
+    from togglr_client.models.track_request import TrackRequest as TrackRequest
+    
+else:
+    from lazy_imports import LazyModule, as_package, load
+
+    load(
+        LazyModule(
+            *as_package(__file__),
+            ("__version__", __version__),
+            ("__all__", __all__),
+            """# import apis into sdk package
 from togglr_client.api.default_api import DefaultApi as DefaultApi
 
 # import ApiClient
@@ -69,3 +108,10 @@ from togglr_client.models.evaluate_response import EvaluateResponse as EvaluateR
 from togglr_client.models.feature_error_report import FeatureErrorReport as FeatureErrorReport
 from togglr_client.models.feature_health import FeatureHealth as FeatureHealth
 from togglr_client.models.health_response import HealthResponse as HealthResponse
+from togglr_client.models.track_request import TrackRequest as TrackRequest
+
+""",
+            name=__name__,
+            doc=__doc__,
+        )
+    )
