@@ -368,7 +368,7 @@ with togglr_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = togglr_client.DefaultApi(api_client)
     feature_key = 'feature_key_example' # str | 
-    track_request = {"variant_key":"A","event_type":"impression","reward":0,"context":{"user.id":"123","country":"RU"}} # TrackRequest | 
+    track_request = {"variant_key":"A","event_type":"success","reward":0,"context":{"user.id":"123","country":"RU"}} # TrackRequest | 
 
     try:
         # Track event for a feature (impression / conversion / error / custom)

@@ -18,9 +18,8 @@ import re  # noqa: F401
 import json
 
 from datetime import datetime
-from pydantic import BaseModel, ConfigDict, Field, StrictFloat, StrictInt, StrictStr
+from pydantic import BaseModel, ConfigDict, Field, StrictFloat, StrictInt, StrictStr, field_validator
 from typing import Any, ClassVar, Dict, List, Optional, Union
-from uuid import UUID
 from typing import Optional, Set
 from typing_extensions import Self
 
@@ -28,14 +27,20 @@ class TrackRequest(BaseModel):
     """
     Event sent from SDK. SDK SHOULD send an impression event for each evaluation (recommended). Conversions / errors / custom events are used to update algorithm statistics. 
     """ # noqa: E501
-    variant_key: StrictStr = Field(description="Variant key returned by evaluate (e.g. \"A\", \"control\", \"v2\").")
-    event_type: StrictStr = Field(description="Type of event (e.g. \"impression\", \"conversion\", \"error\", \"custom\").")
+    variant_key: StrictStr = Field(description="Variant key returned by evaluate (e.g. \"A\", \"v2\").")
+    event_type: StrictStr = Field(description="Type of event (e.g. \"success\", \"failure\", \"error\").")
     reward: Optional[Union[StrictFloat, StrictInt]] = Field(default=None, description="Numeric reward associated with event (e.g. 1.0 for conversion). Default 0.")
     context: Optional[Dict[str, Any]] = Field(default=None, description="Arbitrary context passed by SDK (user id, session, metadata).")
     created_at: Optional[datetime] = Field(default=None, description="Event timestamp. If omitted, server time will be used.")
-    algorithm_id: Optional[UUID] = Field(default=None, description="Optional algorithm id this event is associated with.")
     dedup_key: Optional[StrictStr] = Field(default=None, description="Optional idempotency key to deduplicate duplicate events from SDK retries.")
-    __properties: ClassVar[List[str]] = ["variant_key", "event_type", "reward", "context", "created_at", "algorithm_id", "dedup_key"]
+    __properties: ClassVar[List[str]] = ["variant_key", "event_type", "reward", "context", "created_at", "dedup_key"]
+
+    @field_validator('event_type')
+    def event_type_validate_enum(cls, value):
+        """Validates the enum"""
+        if value not in set(['success', 'failure', 'error']):
+            raise ValueError("must be one of enum values ('success', 'failure', 'error')")
+        return value
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -93,7 +98,6 @@ class TrackRequest(BaseModel):
             "reward": obj.get("reward"),
             "context": obj.get("context"),
             "created_at": obj.get("created_at"),
-            "algorithm_id": obj.get("algorithm_id"),
             "dedup_key": obj.get("dedup_key")
         })
         return _obj

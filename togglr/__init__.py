@@ -2,6 +2,7 @@
 
 from .client import Client, ClientConfig
 from .context import RequestContext
+from .track_event import TrackEvent, EventType
 
 def new_client(api_key: str, **kwargs) -> Client:
     """Create a new Togglr client with default configuration.
@@ -39,6 +40,8 @@ __all__ = [
     "Client",
     "ClientConfig", 
     "RequestContext",
+    "TrackEvent",
+    "EventType",
     "new_client",
     "TogglrError",
     "UnauthorizedError",
