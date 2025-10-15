@@ -10,10 +10,10 @@ def main():
     # Create client with default configuration
     client = togglr.new_client(
         api_key="42b6f8f1-630c-400c-97bd-a3454a07f700",
-        base_url="https://localhost",
+        base_url="http://localhost:8090",
         timeout=1.0,
         cache={"enabled": True, "max_size": 1000, "ttl_seconds": 10},
-        insecure=True,
+        # insecure=True,
     )
     
     # Use context manager to ensure proper cleanup
