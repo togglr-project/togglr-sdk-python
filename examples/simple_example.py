@@ -2,7 +2,7 @@
 """Simple example of using togglr-sdk-python."""
 
 import togglr
-from togglr import Client, RequestContext
+from togglr import Client, RequestContext, TrackEvent, EventType
 
 
 def main():
@@ -10,10 +10,10 @@ def main():
     # Create client with default configuration
     client = togglr.new_client(
         api_key="42b6f8f1-630c-400c-97bd-a3454a07f700",
-        base_url="https://localhost",
+        base_url="http://localhost:8090",
         timeout=1.0,
         cache={"enabled": True, "max_size": 1000, "ttl_seconds": 10},
-        insecure=True,
+        # insecure=True,
     )
     
     # Use context manager to ensure proper cleanup
@@ -91,6 +91,56 @@ def main():
             print(f"Feature is healthy: {is_healthy}")
         except togglr.TogglrError as e:
             print(f"Error checking feature health: {e}")
+        
+        # Example: Track events for analytics
+        # Track impression event (recommended for each evaluation)
+        impression_context = RequestContext.new() \
+            .with_user_id("user123") \
+            .with_country("US") \
+            .with_device_type("mobile")
+        
+        impression_event = TrackEvent.new("A", EventType.SUCCESS) \
+            .with_request_context(impression_context) \
+            .with_dedup_key("impression-user123-new_ui")
+        
+        try:
+            client.track_event("new_ui", impression_event)
+            print("Impression event tracked successfully")
+        except togglr.TogglrError as e:
+            print(f"Error tracking impression event: {e}")
+        
+        # Track conversion event with reward
+        conversion_context = RequestContext.new() \
+            .with_user_id("user123") \
+            .set("conversion_type", "purchase") \
+            .set("order_value", 99.99)
+        
+        conversion_event = TrackEvent.new("A", EventType.SUCCESS) \
+            .with_reward(1.0) \
+            .with_request_context(conversion_context) \
+            .with_dedup_key("conversion-user123-new_ui")
+        
+        try:
+            client.track_event("new_ui", conversion_event)
+            print("Conversion event tracked successfully")
+        except togglr.TogglrError as e:
+            print(f"Error tracking conversion event: {e}")
+        
+        # Track error event
+        error_context = RequestContext.new() \
+            .with_user_id("user123") \
+            .set("error_type", "timeout") \
+            .set("error_message", "Service did not respond in 5s")
+        
+        error_event = TrackEvent.new("B", EventType.ERROR) \
+            .with_request_context(error_context) \
+            .with_dedup_key("error-user123-new_ui")
+        
+        try:
+            client.track_event("new_ui", error_event)
+            print("Error event tracked successfully")
+        except togglr.TogglrError as e:
+            print(f"Error tracking error event: {e}")
 
 
 if __name__ == "__main__":

@@ -6,12 +6,11 @@ Event sent from SDK. SDK SHOULD send an impression event for each evaluation (re
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**variant_key** | **str** | Variant key returned by evaluate (e.g. \&quot;A\&quot;, \&quot;control\&quot;, \&quot;v2\&quot;). | 
-**event_type** | **str** | Type of event (e.g. \&quot;impression\&quot;, \&quot;conversion\&quot;, \&quot;error\&quot;, \&quot;custom\&quot;). | 
+**variant_key** | **str** | Variant key returned by evaluate (e.g. \&quot;A\&quot;, \&quot;v2\&quot;). | 
+**event_type** | **str** | Type of event (e.g. \&quot;success\&quot;, \&quot;failure\&quot;, \&quot;error\&quot;). | 
 **reward** | **float** | Numeric reward associated with event (e.g. 1.0 for conversion). Default 0. | [optional] 
 **context** | **Dict[str, object]** | Arbitrary context passed by SDK (user id, session, metadata). | [optional] 
 **created_at** | **datetime** | Event timestamp. If omitted, server time will be used. | [optional] 
-**algorithm_id** | **str** | Optional algorithm id this event is associated with. | [optional] 
 **dedup_key** | **str** | Optional idempotency key to deduplicate duplicate events from SDK retries. | [optional] 
 
 ## Example

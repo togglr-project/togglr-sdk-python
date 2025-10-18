@@ -15,6 +15,7 @@ from togglr_client.exceptions import ApiException
 from .cache import LRUCache
 from .config import ClientConfig, CacheConfig
 from .context import RequestContext
+from .track_event import TrackEvent
 from .errors import (
     TogglrError,
     UnauthorizedError,
@@ -200,6 +201,18 @@ class Client:
         """
         health = self.get_feature_health(feature_key)
         return health.enabled and not health.auto_disabled
+    
+    def track_event(self, feature_key: str, event: TrackEvent) -> None:
+        """Track an event for analytics.
+        
+        Args:
+            feature_key: The feature key to track an event for
+            event: The track event to send
+            
+        Raises:
+            TogglrError: If tracking fails
+        """
+        self._track_event_with_retries(feature_key, event)
     
     def _evaluate_with_retries(
         self, 
@@ -395,6 +408,51 @@ class Client:
             else:
                 # Handle error responses
                 raise TogglrError(f"Unexpected response type: {type(response)}")
+                
+        except ApiException as e:
+            if e.status == 404:
+                raise NotFoundError("Feature not found")
+            raise e
+    
+    def _track_event_with_retries(self, feature_key: str, event: TrackEvent) -> None:
+        """Track event with retry logic."""
+        last_error = None
+        
+        for attempt in range(self.config.retries + 1):
+            if attempt > 0:
+                # Calculate backoff delay
+                delay = self.config.backoff.calculate_delay(attempt)
+                time.sleep(delay)
+            
+            try:
+                self._track_event_single(feature_key, event)
+                return  # Success, exit retry loop
+                
+            except Exception as e:
+                last_error = e
+                if not self._should_retry(e):
+                    break
+        
+        # Convert API exceptions to our error types
+        if isinstance(last_error, ApiException):
+            raise self._convert_api_exception(last_error)
+        
+        raise TogglrError(f"Event tracking failed: {last_error}")
+    
+    def _track_event_single(self, feature_key: str, event: TrackEvent) -> None:
+        """Perform a single track event request."""
+        try:
+            # Convert track event to API format
+            track_request = event.to_dict()
+            
+            # Make API call
+            response = self._api_client.track_feature_event(
+                feature_key=feature_key,
+                track_request=track_request
+            )
+            
+            # Success - event queued for processing
+            return
                 
         except ApiException as e:
             if e.status == 404:
